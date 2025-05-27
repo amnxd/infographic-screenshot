@@ -15,7 +15,13 @@ async function getBrowser() {
   if (!browser) {
     browser = await puppeteer.launch({
       headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-accelerated-2d-canvas',
+        '--disable-gpu'
+      ]
     });
   }
   return browser;
@@ -24,10 +30,12 @@ async function getBrowser() {
 // Endpoint to capture screenshot
 app.get('/api/screenshot', async (req, res) => {
   try {
-    const url = req.query.url || `https://infographic-screenshot.onrender.com`;   // https://infographic-screenshot.onrender.com/ | http://localhost:${PORT} for localhost
+    const baseUrl = process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`;
+    const url = req.query.url || baseUrl;
+    
     const browser = await getBrowser();
     const page = await browser.newPage();
-    await page.setViewport({ width: 700, height: 1800 }); // Adjust as needed
+    await page.setViewport({ width: 700, height: 1800 });
     await page.goto(url, { waitUntil: 'networkidle0' });
     const screenshot = await page.screenshot({ type: 'png', fullPage: true });
     await page.close();
@@ -36,6 +44,7 @@ app.get('/api/screenshot', async (req, res) => {
     res.set('Content-Disposition', 'attachment; filename="infographic.png"');
     res.send(screenshot);
   } catch (err) {
+    console.error('Screenshot error:', err);
     res.status(500).send('Error capturing screenshot');
   }
 });
@@ -47,5 +56,5 @@ process.on('SIGINT', async () => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 }); 
