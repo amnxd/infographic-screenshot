@@ -24,7 +24,7 @@ async function getBrowser() {
 // Endpoint to capture screenshot
 app.get('/api/screenshot', async (req, res) => {
   try {
-    const url = req.query.url || `http://localhost:${PORT}`;
+    const url = req.query.url || `https://infographic-screenshot.onrender.com`;   // https://infographic-screenshot.onrender.com/ | http://localhost:${PORT} for localhost
     const browser = await getBrowser();
     const page = await browser.newPage();
     await page.setViewport({ width: 700, height: 1800 }); // Adjust as needed
